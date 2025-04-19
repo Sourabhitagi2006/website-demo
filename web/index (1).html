@@ -1,0 +1,311 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smart Agro-Weather & Soil Quality Assistant uses ESP32 and sensors for AI-driven weather predictions and soil monitoring, addressing farmers' challenges.">
+    <meta name="keywords" content="agriculture, weather prediction, soil quality, ESP32, sensors, AI, farmers">
+    <meta property="og:title" content="Smart Agro-Weather & Soil Quality Assistant">
+    <meta property="og:description" content="Empowering farmers with real-time soil and weather insights to tackle climate challenges.">
+    <meta property="og:image" content="https://your-site.com/og-image.jpg">
+    <title>Smart Agro-Weather & Soil Quality Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Navigation Bar -->
+    <nav class="bg-black text-white py-6 fixed w-full top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="#" class="text-3xl font-bold tracking-widest">SMART AGRO</a>
+            <div class="space-x-6">
+                <a href="#home" class="hover:text-cyan-400 smooth-scroll relative nav-link">HOME</a>
+                <a href="#hardware" class="hover:text-cyan-400 smooth-scroll relative nav-link">HARDWARE</a>
+                <a href="#challenges" class="hover:text-cyan-400 smooth-scroll relative nav-link">CHALLENGES</a>
+                <a href="#features" class="hover:text-cyan-400 smooth-scroll relative nav-link">FEATURES</a>
+                <a href="#team" class="hover:text-cyan-400 smooth-scroll relative nav-link">TEAM</a>
+                <a href="#contact" class="hover:text-cyan-400 smooth-scroll relative nav-link">CONTACT</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="bg-gradient-to-br from-black via-gray-800 to-black text-white py-32 mt-20 animate-gradient">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 slide-in">SMART AGRO-WEATHER ASSISTANT</h1>
+            <p class="text-2xl mb-8 slide-in" id="typing-text">REAL-TIME INSIGHTS FOR SUSTAINABLE FARMING</p>
+            <a href="#challenges" class="inline-block bg-cyan-500 text-black px-10 py-4 rounded-full font-bold text-xl hover:bg-cyan-400 transition slide-in pulse">EXPLORE CHALLENGES</a>
+        </div>
+    </section>
+
+    <!-- Hardware Carousel Section -->
+    <section id="hardware" class="py-20 bg-gray-800">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-10 slide-in bounce">OUR HARDWARE</h2>
+            <div class="carousel relative overflow-hidden border-4 border-cyan-500 rounded-xl">
+                <div class="carousel-track flex transition-transform duration-500 ease-in-out">
+                    <div class="carousel-item flex-none w-full md:w-1/3 p-6">
+                        <div class="bg-gray-700 p-8 rounded-xl shadow-lg scale-up glow">
+                            <img src="https://robu.in/wp-content/uploads/2024/02/R101200.jpg" alt="ESP32 Microcontroller" class="w-full h-64 object-cover rounded-lg mb-4">
+                            <h3 class="text-2xl font-bold mb-2">ESP32</h3>
+                            <p class="text-gray-300">Central microcontroller with Wi-Fi to collect and transmit sensor data.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item flex-none w-full md:w-1/3 p-6">
+                        <div class="bg-gray-700 p-8 rounded-xl shadow-lg scale-up glow">
+                            <img src="https://robu.in/wp-content/uploads/2016/03/12251.jpg" alt="Soil Moisture Sensor" class="w-full h-64 object-cover rounded-lg mb-4">
+                            <h3 class="text-2xl font-bold mb-2">SOIL MOISTURE SENSOR</h3>
+                            <p class="text-gray-300">Measures soil water content to optimize irrigation.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item flex-none w-full md:w-1/3 p-6">
+                        <div class="bg-gray-700 p-8 rounded-xl shadow-lg scale-up glow">
+                            <img src="https://robu.in/wp-content/uploads/2017/09/sensor-de-temperatura-ds18b20-prova-d-agua.jpg" alt="DS18B20 Sensor" class="w-full h-64 object-cover rounded-lg mb-4">
+                            <h3 class="text-2xl font-bold mb-2">DS18B20 SENSOR</h3>
+                            <p class="text-gray-300">Waterproof sensor for soil and environmental temperature monitoring.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item flex-none w-full md:w-1/3 p-6">
+                        <div class="bg-gray-700 p-8 rounded-xl shadow-lg scale-up glow">
+                            <img src="https://th.bing.com/th/id/R.24b67de424a970c5cea329aa65b4036f?rik=JfGoxwgG9mZeHQ&riu=http%3a%2f%2f5.imimg.com%2fdata5%2fSELLER%2fDefault%2f2021%2f3%2fLM%2fEN%2fCF%2f6167958%2fnpk-sensor-500x500.jpg&ehk=AiUYIQq6iN7lAAl%2fkpXh98z0RG9%2f3AoL8cpOO%2fEXHgk%3d&risl=&pid=ImgRaw&r=0" alt="NPK Sensor" class="w-full h-64 object-cover rounded-lg mb-4">
+                            <h3 class="text-2xl font-bold mb-2">NPK SENSOR</h3>
+                            <p class="text-gray-300">Detects Nitrogen, Phosphorus, and Potassium for soil fertility analysis.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item flex-none w-full md:w-1/3 p-6">
+                        <div class="bg-gray-700 p-8 rounded-xl shadow-lg scale-up glow">
+                            <img src="https://robu.in/wp-content/uploads/2022/06/battery.36.png" alt="Power Supply/Battery" class="w-full h-64 object-cover rounded-lg mb-4">
+                            <h3 class="text-2xl font-bold mb-2">POWER SUPPLY/BATTERY</h3>
+                            <p class="text-gray-300">Powers the ESP32 and sensors for continuous operation.</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-prev absolute top-1/2 left-4 transform -translate-y-1/2 bg-cyan-500 text-black p-3 rounded-full hover:bg-cyan-400 pulse">←</button>
+                <button class="carousel-next absolute top-1/2 right-4 transform -translate-y-1/2 bg-cyan-500 text-black p-3 rounded-full hover:bg-cyan-400 pulse">→</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Farmers' Challenges Section -->
+    <section id="challenges" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-10 slide-in bounce">FARMERS' CHALLENGES</h2>
+            <p class="text-center text-gray-400 mb-8 slide-in">WE SURVEYED FARMERS TO UNDERSTAND THEIR STRUGGLES WITH CLIMATE AND SOIL CHALLENGES.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in challenge-card" style="--delay: 0.1s;">
+                    <i class="fas fa-cloud-rain text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">UNPREDICTABLE RAINFALL</h3>
+                    <p class="text-gray-400">Extreme weather like droughts and floods disrupts crop planning.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in challenge-card" style="--delay: 0.2s;">
+                    <i class="fas fa-thermometer-full text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">HIGH TEMPERATURES</h3>
+                    <p class="text-gray-400">Rising temperatures reduce yields and degrade soil fertility.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in challenge-card" style="--delay: 0.3s;">
+                    <i class="fas fa-bug text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">PESTS AND DISEASES</h3>
+                    <p class="text-gray-400">Warmer climates increase pest and plant disease prevalence.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in challenge-card" style="--delay: 0.4s;">
+                    <i class="fas fa-wind text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">WIND EVAPORATION</h3>
+                    <p class="text-gray-400">Strong winds cause water shortages and reduce irrigation effectiveness.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in challenge-card" style="--delay: 0.5s;">
+                    <i class="fas fa-seedling text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">TOPSOIL LOSS</h3>
+                    <p class="text-gray-400">Erosion lowers soil fertility and hinders crop growth.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in challenge-card" style="--delay: 0.6s;">
+                    <i class="fas fa-tint text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">IMPROPER IRRIGATION</h3>
+                    <p class="text-gray-400">Inconsistent schedules lead to water wastage or insufficient hydration.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in challenge-card" style="--delay: 0.7s;">
+                    <i class="fas fa-exclamation-triangle text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">LATE PEST DETECTION</h3>
+                    <p class="text-gray-400">Delayed detection results in severe crop damage.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in challenge-card" style="--delay: 0.8s;">
+                    <i class="fas fa-mountain text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">SOIL EROSION</h3>
+                    <p class="text-gray-400">Climate-driven erosion degrades land productivity.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gray-800">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-10 slide-in bounce">KEY FEATURES</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">WEATHER FORECASTING</h3>
+                    <p class="text-gray-300">Accurate predictions using AI to plan farming activities.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">SOIL MONITORING</h3>
+                    <p class="text-gray-300">Real-time soil data via ESP32 sensors for optimal crop health.</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">SMART DASHBOARD</h3>
+                    <p class="text-gray-300">User-friendly interface for weather and soil insights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sensor Data Demo Section -->
+    <section class="py-20 bg-gray-900">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-10 slide-in bounce">LIVE SENSOR DATA (DEMO)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-700 p-6 rounded-xl text-center slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">SOIL MOISTURE</h3>
+                    <p id="moisture-data" class="text-3xl font-bold text-cyan-500">45%</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl text-center slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">TEMPERATURE</h3>
+                    <p id="temp-data" class="text-3xl font-bold text-cyan-500">22°C</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl text-center slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">NPK LEVELS</h3>
+                    <p id="npk-data" class="text-3xl font-bold text-cyan-500">N: 120, P: 80, K: 100</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Weather Prediction Demo Section -->
+    <section class="py-20 bg-gray-800">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-10 slide-in bounce">WEATHER PREDICTION (DEMO)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-700 p-6 rounded-xl text-center slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">TEMPERATURE</h3>
+                    <p id="weather-temp" class="text-3xl font-bold text-cyan-500">25°C</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl text-center slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">HUMIDITY</h3>
+                    <p id="weather-humidity" class="text-3xl font-bold text-cyan-500">60%</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl text-center slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">RAINFALL PROBABILITY</h3>
+                    <p id="weather-rainfall" class="text-3xl font-bold text-cyan-500">30%</p>
+                </div>
+            </div>
+            <!-- Farming Suggestions Subsection -->
+            <div class="mt-10">
+                <div class="bg-gray-700 p-6 rounded-xl text-center slide-in glow">
+                    <h3 class="text-2xl font-bold mb-2">FARMING SUGGESTIONS</h3>
+                    <p id="farming-suggestion" class="text-2xl font-bold text-cyan-500">WATER NOW AND CONSIDER FERTILIZING TODAY.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Team Section -->
+    <section id="team" class="py-20 bg-gradient-to-br from-gray-800 to-black">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-10 slide-in bounce">OUR TEAM</h2>
+            <p class="text-center text-gray-400 mb-8 slide-in">MEET THE TALENTED TEAM BEHIND THIS PROJECT:</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg zoom-in team-card" style="--delay: 0.1s;">
+                    <i class="fas fa-laptop-code text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">WEBSITE PREPARED BY</h3>
+                    <p class="text-gray-300 font-medium">SOURABH & BRYAN</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg zoom-in team-card" style="--delay: 0.2s;">
+                    <i class="fas fa-file-powerpoint text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">POWERPOINT BY</h3>
+                    <p class="text-gray-300 font-medium">SHRIHARI & SOHAM</p>
+                </div>
+                <div class="bg-gray-700 p-6 rounded-xl shadow-lg zoom-in team-card" style="--delay: 0.3s;">
+                    <i class="fas fa-clipboard-check text-4xl text-cyan-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">SURVEY BY</h3>
+                    <p class="text-gray-300 font-medium">SHREYA & KESAR</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-800">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-10 slide-in bounce">GET IN TOUCH</h2>
+            <div class="max-w-lg mx-auto">
+                <form id="contact-form" class="bg-gray-700 p-6 rounded-xl shadow-lg slide-in">
+                    <div class="mb-6">
+                        <label for="name" class="block text-xl font-medium text-gray-300">NAME</label>
+                        <input type="text" id="name" aria-label="Your Name" class="mt-2 block w-full p-3 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400" placeholder="YOUR NAME" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="email" class="block text-xl font-medium text-gray-300">EMAIL</label>
+                        <input type="email" id="email" aria-label="Your Email" class="mt-2 block w-full p-3 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400" placeholder="YOUR EMAIL" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="message" class="block text-xl font-medium text-gray-300">MESSAGE</label>
+                        <textarea id="message" rows="4" aria-label="Your Message" class="mt-2 block w-full p-3 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400" placeholder="YOUR MESSAGE" required></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-cyan-500 text-black px-6 py-3 rounded-full font-bold text-xl hover:bg-cyan-400 transition pulse">SEND MESSAGE</button>
+                    <div id="form-message" class="form-message mt-4"></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Back-to-Top Button -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 bg-cyan-500 text-black p-3 rounded-full shadow-lg hidden hover:bg-cyan-400 pulse">↑</button>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-6">
+        <div class="container mx-auto px-6 text-center">
+            <p>© 2025 SMART AGRO-WEATHER & SOIL QUALITY ASSISTANT. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
